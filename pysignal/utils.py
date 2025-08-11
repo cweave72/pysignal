@@ -121,6 +121,55 @@ def quantize(x, wl, fl, mode=np.round, signed=True, out='float'):
     return x_clip
 
 
+def upsample(inp: np.ndarray, M: int) -> np.ndarray:
+    """Zero-pads the input array by 1:M.
+    """
+    y = np.zeros(len(inp) * M, dtype=inp.dtype)
+    y[::M] = inp
+    return y
+
+
+def bytes_to_bits(inp: bytes, msb_first=True):
+    """Returns an array of 1's and 0's from bytearray provided.
+    """
+    bits = []
+    shifts = list(range(8))
+
+    if msb_first:
+        shifts = shifts[::-1]
+
+    for b in inp:
+        for shift in shifts:
+            bit = b >> shift & 0x1
+            bits.append(bit)
+    return bits
+
+
+def bits_to_int(inp: list, msb_first=True, signed=False):
+    """Convert a list of bits to an integer.
+    :inp: Input list [1, 0, 1, ...]
+    :msb_first: Assumes inp[0] corresponds to the MSB of the word.
+    :signed: Assume word is a signed value.
+    """
+    result = 0
+    bit_weights = [2**k for k in range(len(inp))]
+
+    # If signed, negate the weight of the msb (the sign bit) for 2s complement
+    if signed:
+        bit_weights[-1] = -bit_weights[-1]
+
+    if msb_first:
+        bits = inp[::-1]
+    else:
+        bits = inp
+
+    for k, b in enumerate(bits):
+        if b == 1:
+            result += bit_weights[k]
+
+    return result
+
+
 def chunker(iterable, chunkSize, overlap=0):
     """Yields chunks of chunkSize samples from the iterable, with optional
     overlap across returned chunks.
@@ -130,7 +179,7 @@ def chunker(iterable, chunkSize, overlap=0):
     # first iteration, fill chunk with chunkSize amount of stuff.
     chunk = []
     for _ in range(chunkSize):
-        chunk.append(it.next())
+        chunk.append(next(it))
 
     yield chunk
 
@@ -142,7 +191,7 @@ def chunker(iterable, chunkSize, overlap=0):
         chunk = []
         try:
             for _ in range(numNewItems):
-                chunk.append(it.next())
+                chunk.append(next(it))
             out = save + chunk
             yield out
             save = out[-overlap:] if overlap != 0 else []

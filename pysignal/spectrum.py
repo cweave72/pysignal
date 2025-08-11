@@ -45,22 +45,25 @@ def computeAvgSpec(x, fs=1, Nfft=None, wind='blackman'):
     # Ensure length is even.
     N -= (N % 2)
 
-    # If Nfft is not specified, find maximum Nfft which still guarantees 8
-    # averages (assume overlap of Nfft/2).
-    minNumAvgs = 8
-    M = 16
-    while M >= 4:
-        numAvgs = 2*(N/(2**M)) - 1
-        if numAvgs > minNumAvgs:
-            break
-        M -= 1
+    if Nfft is None:
+        # If Nfft is not specified, find maximum Nfft which still guarantees 8
+        # averages (assume overlap of Nfft/2).
+        minNumAvgs = 8
+        M = 16
+        while M >= 4:
+            numAvgs = 2*(N/(2**M)) - 1
+            if numAvgs > minNumAvgs:
+                break
+            M -= 1
 
-    logger.debug("Using M=%u, %u averages" % (M, numAvgs))
-    Nfft = 2**M
+        Nfft = 2**M
+        logger.debug(f"Using Nfft={Nfft}, {numAvgs} averages")
+    else:
+        logger.debug(f"Using Nfft={Nfft}")
 
-    Xavg = np.zeros(Nfft)
+    Xavg = np.zeros(Nfft, dtype=x.dtype)
     k = 0
-    for chunk in utils.chunker(x, Nfft, Nfft/2):
+    for chunk in utils.chunker(x, Nfft, Nfft//2):
         if len(chunk) == Nfft:
             X, f = computeSpec(chunk, fs=fs, Nfft=Nfft, wind=wind)
             Xavg += X
@@ -70,4 +73,5 @@ def computeAvgSpec(x, fs=1, Nfft=None, wind='blackman'):
 
     Xavg /= k
 
+    logger.debug(f"Computed {k} averages.")
     return Xavg, f

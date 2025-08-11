@@ -61,7 +61,7 @@ def plot(x, y, addToAxes=False, **kwargs):
 
     ax.grid(grid)
 
-    if np.iscomplex(y[0]):
+    if any(np.iscomplex(y)):
         color = kwargs.pop('color', None)
         ax.plot(x, np.real(y), **kwargs)
         ax.plot(x, np.imag(y), color='red', **kwargs)

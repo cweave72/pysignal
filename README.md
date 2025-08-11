@@ -16,3 +16,9 @@ Run the quick test:
 ```
 (pysignal) python test.py
 ```
+
+## Running tests
+
+```
+(pysignal) pytest -vv pysignal/tests
+```
