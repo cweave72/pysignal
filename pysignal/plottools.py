@@ -169,7 +169,7 @@ def plotSpec(y, fs=1, units='hz', Nfft=None, avg=False,
     ax.grid(grid)
 
     if avg:
-        X, f = spec.computeAvgSpec(y, fs=fs, Nfft=Nfft)
+        X, f = spec.computeAvgSpec(y, fs=fs, Nfft=Nfft, wind='blackman')
     else:
         X, f = spec.computeSpec(y, fs=fs, Nfft=Nfft)
 
@@ -177,7 +177,7 @@ def plotSpec(y, fs=1, units='hz', Nfft=None, avg=False,
     Xnorm_dB = 10*np.log10(Xnorm)
     f_scale = {'hz': 1.0, 'khz': 1000.0, 'mhz': 1e6}[units]
 
-    ax.plot(np.fft.fftshift(f/f_scale), np.fft.fftshift(Xnorm_dB), **kwargs)
+    ax.plot(f/f_scale, np.fft.fftshift(Xnorm_dB), **kwargs)
 
     if axis is not None:
         ax.axis(axis)
@@ -185,3 +185,63 @@ def plotSpec(y, fs=1, units='hz', Nfft=None, avg=False,
         ax.axis([-fs/(2*f_scale), fs/(2*f_scale), None, None])
 
     return fig, ax
+
+
+def plotEye(y, sps, num_symbs=2, addToAxes=False, **kwargs):
+    """ Plots an eye-diagram.
+    :param y: The y-axis vector.
+    :type y: Array-type
+
+    :param sps: Samples per symbol in y
+    :type sps: numeric.
+
+    Following kwargs are accepted.
+
+    xlabel : x-axis label,
+    ylabel : y-axis label,
+    title  : plot title
+    axis   : Axis limits -> [xmin, xmax, ymin, ymax]
+    grid   : Turn grid on.
+
+    Any other kwargs are passed to the plot command.
+    """
+    xlabel = kwargs.pop('xlabel', 'sample')
+    ylabel = kwargs.pop('ylabel', None)
+    title  = kwargs.pop('title', 'Eye Diagram')
+    axis   = kwargs.pop('axis', [0, sps*num_symbs-1, None, None])
+    grid   = kwargs.pop('grid', 'on')
+
+    if addToAxes:
+        # Get current figure and axis.
+        fig = plt.gcf()
+        ax = plt.gca()
+    else:
+        # Create new figure and axis.
+        fig, ax = plt.subplots()
+
+    samples_per_fold = sps * num_symbs
+    # Number of sections to fold.
+    Nsections = len(y)//samples_per_fold
+
+    folded = np.empty((Nsections, samples_per_fold))
+
+    for k in range(Nsections):
+        folded[k, :] = y[samples_per_fold*k:samples_per_fold*k+samples_per_fold]
+
+    # Create new figure and axis.
+    xvals = np.arange(samples_per_fold)
+    ax.plot(xvals, folded.T)
+
+    if xlabel is not None:
+        ax.set_xlabel(xlabel)
+    if ylabel is not None:
+        ax.set_ylabel(ylabel)
+    if title is not None:
+        ax.set_title(title)
+
+    ax.grid(grid)
+    ax.axis(axis)
+
+    return fig, ax
+
+

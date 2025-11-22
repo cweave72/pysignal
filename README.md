@@ -22,3 +22,19 @@ Run the quick test:
 ```
 (pysignal) pytest -vv pysignal/tests
 ```
+
+## Notebooks
+
+Running a marimo notebook (Ex: `notebooks/resampler_demo`):
+
+1. Activate the virtual environment for this repo.
+```
+. init_venv
+```
+
+2. Run marimo edit:
+```
+(pysignal) $ marimo edit notebooks/resampler_demo/notebook.py
+```
+
+Go to your browser to see the notebook.

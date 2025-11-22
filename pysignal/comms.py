@@ -169,14 +169,14 @@ def getNoisePwr(sig, EsN0_dB, BW):
 def addNoise(sig, EsN0_dB, BW, cmplx=True):
     """Adds noise to signal in given BW.
     """
-    N0 = getNoisePwr(sig, EsN0_dB, BW)
+    Npwr= getNoisePwr(sig, EsN0_dB, BW)
 
     size = len(sig)
     if cmplx:
-        noise = (np.sqrt(N0/2)*np.random.randn(size) + 
-                 1j*np.sqrt(N0/2)*np.random.randn(size))
+        noise = (np.sqrt(Npwr/2)*np.random.randn(size) + 
+                 1j*np.sqrt(Npwr/2)*np.random.randn(size))
     else:
-        noise = np.sqrt(N0)*np.random.randn(size)
+        noise = np.sqrt(Npwr)*np.random.randn(size)
 
     return sig + noise
 
