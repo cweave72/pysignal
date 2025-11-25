@@ -150,6 +150,7 @@ def plotSpec(y, fs=1, units='hz', Nfft=None, avg=False,
     title  = kwargs.pop('title', None)
     axis   = kwargs.pop('axis', None)
     grid   = kwargs.pop('grid', 'on')
+    wind   = kwargs.pop('wind', None)
 
     if addToAxes:
         # Get current figure and axis.
@@ -169,9 +170,9 @@ def plotSpec(y, fs=1, units='hz', Nfft=None, avg=False,
     ax.grid(grid)
 
     if avg:
-        X, f = spec.computeAvgSpec(y, fs=fs, Nfft=Nfft, wind='blackman')
+        X, f = spec.computeAvgSpec(y, fs=fs, Nfft=Nfft, wind=wind)
     else:
-        X, f = spec.computeSpec(y, fs=fs, Nfft=Nfft)
+        X, f = spec.computeSpec(y, fs=fs, Nfft=Nfft, wind=wind)
 
     Xnorm = np.absolute(X/np.amax(X))**2
     Xnorm_dB = 10*np.log10(Xnorm)

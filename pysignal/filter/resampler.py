@@ -101,7 +101,7 @@ class Resampler(Fir):
         logger.debug(f"Q={Q}")
 
         # Number of expected output samples (1:P/Q) interpolation factor.
-        Nout = int(len(x)*(self.P/Q))
+        Nout = int(round(len(x)*(self.P/Q)))
         y = np.zeros(Nout, dtype=complex)
         idx_out = 0
 
@@ -120,7 +120,7 @@ class Resampler(Fir):
             idx_in += 1
 
             # Compute output samples until accumulator overflow.
-            while accum < self.P:
+            while accum < self.P and idx_out < Nout:
                 path_index = int(accum)
                 frac_part = accum - path_index
                 #logger.debug(f"{idx_in} accum={accum}, path_idx={path_index} "

@@ -25,16 +25,16 @@ Run the quick test:
 
 ## Notebooks
 
-Running a marimo notebook (Ex: `notebooks/resampler_demo`):
+Running a marimo notebook (Ex: `notebooks/resampler_demo.py`):
 
-1. Activate the virtual environment for this repo.
+1. Activate the virtual environment for the repo.
 ```
 . init_venv
 ```
 
 2. Run marimo edit:
 ```
-(pysignal) $ marimo edit notebooks/resampler_demo/notebook.py
+(pysignal) $ marimo edit notebooks/resampler_demo.py
 ```
 
 Go to your browser to see the notebook.
