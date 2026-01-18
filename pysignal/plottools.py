@@ -174,8 +174,8 @@ def plotSpec(y, fs=1, units='hz', Nfft=None, avg=False,
     else:
         X, f = spec.computeSpec(y, fs=fs, Nfft=Nfft, wind=wind)
 
-    Xnorm = np.absolute(X/np.amax(X))**2
-    Xnorm_dB = 10*np.log10(Xnorm)
+    Xnorm = np.absolute(X)**2
+    Xnorm_dB = 10*np.log10(Xnorm/np.amax(Xnorm))
     f_scale = {'hz': 1.0, 'khz': 1000.0, 'mhz': 1e6}[units]
 
     ax.plot(f/f_scale, np.fft.fftshift(Xnorm_dB), **kwargs)

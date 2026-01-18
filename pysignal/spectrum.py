@@ -31,7 +31,7 @@ def computeSpec(x, fs=1, Nfft=None, wind=None):
         X = np.fft.fft(x, Nfft)
 
     # Get the frequency axis.
-    f = np.linspace(-fs/2, fs/2, Nfft)
+    f = np.linspace(-fs/2, fs/2, Nfft, endpoint=False)
 
     return X, f
 

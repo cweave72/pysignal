@@ -12,15 +12,6 @@ def _():
 
 @app.cell
 def _():
-    # Add the current directory to make pysignal importable.
-    import sys
-    import os
-    sys.path.append(os.getcwd())
-    return
-
-
-@app.cell
-def _():
     import numpy as np
     import logging
     import pysignal.utils as utils

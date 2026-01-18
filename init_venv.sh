@@ -14,6 +14,10 @@ function activate_env {
     fi
 }
 
+# Set the script path to the PYTHONPATH so that pysignal imports within marimo
+# notebooks work.
+export PYTHONPATH=$SCRIPTPATH
+
 VENV_DIR=.venv
 
 # Activate the virtual env.
