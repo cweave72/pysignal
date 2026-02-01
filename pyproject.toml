@@ -14,3 +14,10 @@ dependencies = [
     "scikit-commpy>=0.8.0",
     "scipy>=1.15.3",
 ]
+
+[tool.setuptools.packages.find]
+include = ["pysignal*"]
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
