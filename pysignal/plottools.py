@@ -111,7 +111,7 @@ def plotTime(y, fs=1, units=None, addToAxes=False, **kwargs):
     return fig, ax
 
 
-def plotSpec(y, fs=1, units='hz', Nfft=None, avg=False, 
+def plotSpec(y, fs=1, units='hz', Nfft=None, avg=False, normAvg=True,
         addToAxes=False, **kwargs):
     """ Generate a spectral plot from the signal, y.
     :param y: The signal vector.
@@ -129,6 +129,11 @@ def plotSpec(y, fs=1, units='hz', Nfft=None, avg=False,
     :param avg: Generate an averaged spectrum.
     :type avg: boolean
 
+    :param normAvg: Normalize to the average power instead of the peak, so
+                    the plotted dB values reflect SNR relative to the noise
+                    floor.
+    :type normAvg: boolean
+
     :param addToAxes: Add the plot axis to an existing axis (for overlaying
                       plots).
     :param addToAxes: boolean
@@ -145,12 +150,14 @@ def plotSpec(y, fs=1, units='hz', Nfft=None, avg=False,
     """
     fs = float(fs)
 
+    _unset = object()
+
     xlabel = kwargs.pop('xlabel', None)
     ylabel = kwargs.pop('ylabel', 'dB')
     title  = kwargs.pop('title', None)
     axis   = kwargs.pop('axis', None)
     grid   = kwargs.pop('grid', 'on')
-    wind   = kwargs.pop('wind', None)
+    wind   = kwargs.pop('wind', _unset)
 
     if addToAxes:
         # Get current figure and axis.
@@ -169,13 +176,15 @@ def plotSpec(y, fs=1, units='hz', Nfft=None, avg=False,
 
     ax.grid(grid)
 
+    specKwargs = {} if wind is _unset else {'wind': wind}
     if avg:
-        X, f = spec.computeAvgSpec(y, fs=fs, Nfft=Nfft, wind=wind)
+        X, f = spec.computeAvgSpec(y, fs=fs, Nfft=Nfft, **specKwargs)
     else:
-        X, f = spec.computeSpec(y, fs=fs, Nfft=Nfft, wind=wind)
+        X, f = spec.computeSpec(y, fs=fs, Nfft=Nfft, **specKwargs)
 
     Xnorm = np.absolute(X)**2
-    Xnorm_dB = 10*np.log10(Xnorm/np.amax(Xnorm))
+    norm = np.mean(Xnorm) if normAvg else np.amax(Xnorm)
+    Xnorm_dB = 10*np.log10(Xnorm/norm)
     f_scale = {'hz': 1.0, 'khz': 1000.0, 'mhz': 1e6}[units]
 
     ax.plot(f/f_scale, np.fft.fftshift(Xnorm_dB), **kwargs)

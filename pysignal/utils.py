@@ -14,37 +14,70 @@ logger.addHandler(logging.NullHandler())
 
 
 class FixedPoint(object):
-    def __init__(self, wl, fl, x_in=None):
+    """Wraps a fixed-point value (or array of values) at a given wl/fl.
+
+    Works equally as a scalar wrapper or an array wrapper -- x_in/x_fp may
+    be a plain number or a numpy array (or anything array-like), and every
+    method below operates elementwise in the array case.
+    """
+
+    def __init__(self, wl, fl, x_in=None, signed=True):
         self.wl = wl
         self.fl = fl
+        self.signed = signed
 
-        if x_in:
-            self.x_fp = quantize(x_in, self.wl, self.fl, 
-                    out='scaledint')
+        if x_in is not None:
+            self.x_fp = quantize(x_in, self.wl, self.fl,
+                    signed=self.signed, out='scaledint')
             self.x = self.getFloat()
 
     def set_float(self, x_in):
-        self.x_fp = quantize(x_in, self.wl, self.fl, out='scaledint')
+        self.x_fp = quantize(x_in, self.wl, self.fl,
+                signed=self.signed, out='scaledint')
         self.x = self.getFloat()
 
     def set_fp(self, x_fp):
-        self.x_fp = int(x_fp)
+        if np.isscalar(x_fp):
+            self.x_fp = int(x_fp)
+        else:
+            self.x_fp = np.asarray(x_fp).astype(np.int64)
         self.x = self.getFloat()
 
     def intpart(self):
         return self.x_fp >> self.fl
 
     def fracpart(self):
-        return self.x_fp - (self.intpart()*(2**(self.fl))) 
+        return self.x_fp - (self.intpart()*(2**(self.fl)))
 
     def getFloat(self):
-        return float(self.x_fp) / 2**(self.fl)
+        return self.x_fp / 2**(self.fl)
 
-    def quant(self, wl, fl):
+    def quant(self, wl, fl, signed=None):
         """ Quantize to new fixed point representation. Return new instance.
+        signed defaults to this instance's own signed-ness if not given.
         """
-        tmp = float(self.x_fp) / 2**(self.fl)
-        return FixedPoint(wl, fl, x_in=tmp)
+        tmp = self.x_fp / 2**(self.fl)
+        signed = self.signed if signed is None else signed
+        return FixedPoint(wl, fl, x_in=tmp, signed=signed)
+
+    @staticmethod
+    def multiply(a, b, wl=None, fl=None):
+        """Multiply two FixedPoint instances. Returns a new FixedPoint.
+
+        By default the output format is (a.wl+b.wl, a.fl+b.fl) which
+        preserves full precision with no overflow. Pass wl/fl to override.
+        The result is signed if either input is signed.
+        """
+        out_wl = a.wl + b.wl if wl is None else wl
+        out_fl = a.fl + b.fl if fl is None else fl
+        out_signed = a.signed or b.signed
+        result = a.x * b.x
+        return FixedPoint(out_wl, out_fl, x_in=result, signed=out_signed)
+
+    def __repr__(self):
+        shape = '' if np.isscalar(self.x) else f' shape={np.shape(self.x)}'
+        sign = 's' if self.signed else 'u'
+        return f"FixedPoint({sign}({self.wl},{self.fl}), x={self.x}{shape})"
 
 
 def csvRead(filename, oversamp=1):

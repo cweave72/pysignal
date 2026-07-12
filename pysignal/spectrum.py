@@ -61,17 +61,18 @@ def computeAvgSpec(x, fs=1, Nfft=None, wind='blackman'):
     else:
         logger.debug(f"Using Nfft={Nfft}")
 
-    Xavg = np.zeros(Nfft, dtype=x.dtype)
+    Pavg = np.zeros(Nfft)
     k = 0
     for chunk in utils.chunker(x, Nfft, Nfft//2):
         if len(chunk) == Nfft:
             X, f = computeSpec(chunk, fs=fs, Nfft=Nfft, wind=wind)
-            Xavg += X
+            Pavg += np.absolute(X)**2
             k += 1
         else:
             break
 
-    Xavg /= k
+    Pavg /= k
+    Xavg = np.sqrt(Pavg)
 
     logger.debug(f"Computed {k} averages.")
     return Xavg, f

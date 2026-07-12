@@ -49,7 +49,7 @@ def _():
 def _(QpskMapper, ShapingFilter):
     # Qpsk with Nyquist pulse at 2 samples/symbol.
     # Excess bandwidth 
-    alpha = 0.2
+    alpha = 0.3
     # Samples/symbol
     sps = 2
     mapper = QpskMapper()
@@ -66,9 +66,10 @@ def _(comms, mapper, np, plottools, shaper, sps):
     symbs = comms.random_symbols([0, 1, 2, 3], num=Nsymbs, seed=49013)
     mapped_symbs = mapper.map_symbs(symbs)
     shaped = shaper.process(mapped_symbs, use_quantized=True)
+    # Scale the shaped samples to make the constellation points at (+-1,+-1)
     shaped *= np.sqrt(2)
 
-    shaped = comms.addNoise(shaped, EsN0_dB=EsN0, BW=1)
+    shaped = comms.addNoise(shaped, EsN0_dB=EsN0, sps=1)
     plottools.plotSpec(shaped,
                        fs=sps,
                        avg=False,
@@ -189,7 +190,9 @@ def _(P, plottools, plt, resamp, shaped, sps, sps_out, x_interp):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ##Using the Resampler to correct QPSK timing offset
+    ##Using a Resampler to correct QPSK timing offset
+
+    For this we assume we have output samples of a matched filter at 2 samples/symbol, with no symbol timing correction applied.  We use a resampling filter to adjust the sample locations to align the samples with the optimal location for making a symbol decision. Typically, the resampler would be driven by a timing recovery loop which is attempting to drive the timing error to zero.
     """)
     return
 

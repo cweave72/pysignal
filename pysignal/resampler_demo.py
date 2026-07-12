@@ -32,7 +32,7 @@ def main():
     #logger.debug(f"mapped_symbs={mapped_symbs}")
     shaped = shaper.process(mapped_symbs, use_quantized=True)
 
-    shaped = comms.addNoise(shaped, EsN0_dB=EsN0, BW=2)
+    shaped = comms.addNoise(shaped, EsN0_dB=EsN0, sps=2)
 
     #plottools.plotSpec(shaped, fs=2, avg=True, title='Shaped Input')
 

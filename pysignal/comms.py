@@ -50,6 +50,12 @@ class ShapingFilter:
             xlabel='freq normalized to symbol rate',
             ylabel='dB',
             axis=[-self.M/2, self.M/2, -80, 5])
+
+        bw = (1 + self.alpha) / 2
+        ax.axvline(x= bw, color='r', linestyle='--', label=f'±(1+α)/2 = ±{bw:.3f}')
+        ax.axvline(x=-bw, color='r', linestyle='--')
+        ax.legend()
+
         return fig, ax
 
     def process(self, mapped_symbs: np.ndarray, use_quantized=False):
@@ -155,21 +161,25 @@ def genNormalizedAwgn(normPwr_dB, size, cmplx=True):
     return N
 
 
-def getNoisePwr(sig, EsN0_dB, BW):
-    """Returns the noise power required to add noise to generate a signal with 
-    Es/N0 equal to the value provided in the given bandwidth.
+def getNoisePwr(sig, EsN0_dB, sps):
+    """Returns the noise power required to generate a noisy signal with the
+    desired EsN0_dB in a normalized bandwidth, specified by sps
+    (samples/symbol).
     """
+    # Compute the desired symbol SNR as a linear value.
     EsN0_lin = np.power(10, EsN0_dB/10)
-    P = np.var(sig)
-    Es = P/BW
-    N0 = Es/EsN0_lin
-    return N0
+    # Compute total signal power.
+    Pr = np.var(sig)
+    # Compute the noise power required to reach the specified Es/N0.
+    N = (Pr * sps)/EsN0_lin
+    return N
 
 
-def addNoise(sig, EsN0_dB, BW, cmplx=True):
-    """Adds noise to signal in given BW.
+def addNoise(sig, EsN0_dB, sps, cmplx=True):
+    """Adds noise to signal in given normalized BW, specified by sps
+    (samples/symbol).
     """
-    Npwr= getNoisePwr(sig, EsN0_dB, BW)
+    Npwr= getNoisePwr(sig, EsN0_dB, sps)
 
     size = len(sig)
     if cmplx:
